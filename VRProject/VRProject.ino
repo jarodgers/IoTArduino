@@ -1,9 +1,13 @@
 #include <eHealth.h>
+#include <SoftwareSerial.h>
+#include "HardwareSerial.h"
+
 
 void sendBPM(int rate);
 void sendBloodPressure(int systolic, int diastolic);
 void sendSweat(int sweat);
 boolean checkForString(char * string);
+SoftwareSerial serialBT(10, 11);
 
 //  Variables
 int pulsePin = 0;                 // Pulse Sensor purple wire connected to analog pin 0
@@ -22,6 +26,7 @@ void setup() {
   
  pinMode(blinkPin,OUTPUT);         // pin that will blink to your heartbeat!
  Serial.begin(9600);             // we agree to talk fast!
+ serialBT.begin(9600);
  //Serial.begin(115200);
  interruptSetup();                 // sets up to read Pulse Sensor signal every 2mS 
   // IF YOU ARE POWERING The Pulse Sensor AT VOLTAGE LESS THAN THE BOARD VOLTAGE, 
@@ -61,7 +66,7 @@ void loop() {
 void sendBPM(int rate) {
   char str[30];
   sprintf(str,"NHR,%d\n",rate);
-  Serial.print(str);
+  serialBT.print(str);
   //Serial.print(str);
   /*
   Serial.print("NHR,");
@@ -75,7 +80,7 @@ void sendBPM(int rate) {
 void sendBloodPressure(int systolic, int diastolic) {
   char str[30];
   sprintf(str,"NBP,%d,%d\n",30+systolic,diastolic);
-  Serial.print(str);
+  serialBT.print(str);
   //Serial.print(str);
   /*
   Serial.print("NBP,");
@@ -91,24 +96,24 @@ void sendBloodPressure(int systolic, int diastolic) {
 }
 
 void sendSweat(int sweat) {
-  Serial.print("NS,");
-  Serial.print(sweat);
-  Serial.print("\n");
+  serialBT.print("NS,");
+  serialBT.print(sweat);
+  serialBT.print("\n");
 }
 
 boolean checkForNewInput(char * string) {
-  if (Serial.available() > 0) {
+  if (serialBT.available() > 0) {
     int index = 0;
     char inChar;
-    while (Serial.available() > 0) {
-      inChar = Serial.read();
+    while (serialBT.available() > 0) {
+      inChar = serialBT.read();
       if (inChar == '\n' || inChar == '\r' || index >= 29)
         break;
       string[index++] = inChar;
     }
     string[index] = '\0';
-    while (Serial.available() > 0)
-      Serial.read();
+    while (serialBT.available() > 0)
+      serialBT.read();
     return 1;
   }
   else {

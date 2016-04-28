@@ -31,9 +31,9 @@
 
 // include this library's description file
 #include "eHealth.h"
-#include <SoftwareSerial.h>
 
-SoftwareSerial BloodPressure(10,11);
+
+//SoftwareSerial BloodPressure(10,11);
 
 
 //***************************************************************
@@ -114,7 +114,7 @@ SoftwareSerial BloodPressure(10,11);
 	//!	Example: eHealth.initBloodPressureSensor();									*
 	//!******************************************************************************
 
-	void eHealthClass::readBloodPressureSensor(void)
+	/*void eHealthClass::readBloodPressureSensor(void)
 	{	
 		unsigned char _data;
 		int ia=0;
@@ -161,6 +161,58 @@ SoftwareSerial BloodPressure(10,11);
 
  			for (int i = 0; i<3; i++){ // CheckSum 2
   				BloodPressure.read();
+ 			}	
+			
+		}
+	}*/
+
+	void eHealthClass::readBloodPressureSensor(void)
+	{	
+		unsigned char _data;
+		int ia=0;
+		length=0;
+
+		Serial.begin(19200);
+	 	Serial.write(0xAA);
+		delayMicroseconds(1);
+	 	Serial.write(0x55);
+		delayMicroseconds(1);
+		Serial.write(0x88);
+	 	delay(2500);
+
+		Serial.print("\n");
+
+		if (Serial.available() > 0) { // The protocol sends the measures 
+
+			for (int i = 0; i<4; i++){ // Read four dummy data	
+				Serial.read();
+			}
+			
+ 			while(_data != 0xD1){
+  				if (ia==0){
+   				_data = Serial.read();
+  				}
+
+			bloodPressureDataVector[length].year = swap(_data);
+			bloodPressureDataVector[length].month = swap(Serial.read());
+			bloodPressureDataVector[length].day = swap(Serial.read());
+			bloodPressureDataVector[length].hour = swap(Serial.read());
+			bloodPressureDataVector[length].minutes = swap(Serial.read());
+			bloodPressureDataVector[length].systolic = swap(Serial.read());
+			bloodPressureDataVector[length].diastolic = swap(Serial.read());
+			bloodPressureDataVector[length].pulse = swap(Serial.read());
+			length++;
+			ia=1;
+			for (int i = 0; i<4; i++){ // CheckSum 1
+				Serial.read();
+			}
+			
+			_data = Serial.read();
+			}
+
+
+ 			for (int i = 0; i<3; i++){ // CheckSum 2
+  				Serial.read();
  			}	
 			
 		}
